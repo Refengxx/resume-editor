@@ -149,7 +149,7 @@ select { padding-right: 26px; }
   color: var(--t-text);
   font-family: var(--t-font);
   font-size: calc(var(--t-base) * 1pt);
-  line-height: 1.55;
+  line-height: var(--t-line-height, 1.55);
   padding: var(--t-mt) var(--t-mr) var(--t-mb) var(--t-ml);
   flex: none;
 }

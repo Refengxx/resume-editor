@@ -70,6 +70,23 @@
     return normalizeTemplate(BUILTIN_TEMPLATES[0]);
   }
 
+  /* 模板 + 用户字号覆盖 → 实际生效的模板。
+     优先用用户填的绝对 pt，再乘全局缩放；两项可叠加。 */
+  function r1(v) { return Math.round(v * 10) / 10; }
+
+  function effectiveTemplate() {
+    var T = currentTemplate();
+    var f = (state.resume.meta && state.resume.meta.font) || {};
+    var s = num(f.scale, 100) / 100;
+    function pick(ov, tv) { var v = num(ov, 0); return r1((v > 0 ? v : tv) * s); }
+    T.font.base = pick(f.base, T.font.base);
+    T.header.nameSize = pick(f.name, T.header.nameSize);
+    T.header.titleSize = pick(f.title, T.header.titleSize);
+    T.header.contactSize = pick(f.contact, T.header.contactSize);
+    T.section.titleSize = pick(f.sectionTitle, T.section.titleSize);
+    return T;
+  }
+
   /* ---------------- 存储 ---------------- */
   function save() {
     clearTimeout(saveTimer);
@@ -125,6 +142,26 @@
          (b.photo ? '<div style="margin-top:6px"><img src="' + b.photo + '" style="height:56px;border:1px solid #dde;border-radius:4px"></div>' : '') +
          '</div>';
     h += '</div>';
+
+    /* 字号控制 */
+    var F = (R.meta && R.meta.font) || {};
+    var T0 = currentTemplate();
+    var sc = num(F.scale, 100);
+    h += '<div class="group"><div class="ghead"><strong>字号</strong><div class="ops">' +
+         '<button type="button" data-act="font-reset">恢复模板字号</button></div></div>';
+    h += '<div class="field"><label>全局缩放 <b data-live-scale style="color:#2f6fed">' + sc + '%</b>' +
+         '　→ 正文实际 ' + r1(T0.font.base * sc / 100) + ' pt</label>' +
+         '<input type="range" data-path="meta.font.scale" min="80" max="130" step="5" value="' + sc + '"></div>';
+    h += '<div class="grid2">' +
+         field('meta.font.base', '正文 (pt，留空=模板)', F.base || '', T0.font.base) +
+         field('meta.font.sectionTitle', '小节标题 (pt)', F.sectionTitle || '', T0.section.titleSize) +
+         '</div>';
+    h += '<div class="grid2">' +
+         field('meta.font.name', '姓名 (pt)', F.name || '', T0.header.nameSize) +
+         field('meta.font.title', '头衔 (pt)', F.title || '', T0.header.titleSize) +
+         '</div>';
+    h += field('meta.font.contact', '联系方式 (pt)', F.contact || '', T0.header.contactSize);
+    h += '<div class="hint">缩放会乘在所有字号上；左边填具体 pt 则覆盖模板值，两者叠加生效。</div></div>';
 
     /* 各小节 */
     R.sections.forEach(function (sec, si) {
@@ -202,7 +239,8 @@
     ['--t-sec-title', function (T) { return T.section.titleSize; }],
     ['--t-sec-before', function (T) { return T.section.spaceBefore; }],
     ['--t-sec-after', function (T) { return T.section.spaceAfter; }],
-    ['--t-bullet-indent', function (T) { return T.bullet.indent; }]
+    ['--t-bullet-indent', function (T) { return T.bullet.indent; }],
+    ['--t-line-height', function (T) { return T.font.lineSpacing || 1.55; }]
   ];
 
   function applyTemplate(T) {
@@ -265,7 +303,7 @@
   }
 
   function renderPreview() {
-    var T = currentTemplate();
+    var T = effectiveTemplate();
     applyTemplate(T);
     $('#page').innerHTML = buildPreview(state.resume, T);
   }
@@ -328,7 +366,7 @@
     var old = btn.textContent;
     btn.disabled = true; btn.textContent = '生成中…';
     try {
-      var T = currentTemplate();
+      var T = effectiveTemplate();
       var photo = null;
       if (state.resume.basic.photo) {
         var raw = dataUrlToBytes(state.resume.basic.photo);
@@ -353,7 +391,11 @@
       var t = e.target, p = t.getAttribute && t.getAttribute('data-path');
       if (!p) return;
       setPath(state.resume, p, t.value);
-      if (p.indexOf('.title') > -1 && t.closest('.group')) {
+      if (p === 'meta.font.scale') {
+        var live = t.closest('.field') && t.closest('.field').querySelector('[data-live-scale]');
+        if (live) live.textContent = t.value + '%';
+      }
+      if (/^sections\.\d+\.title$/.test(p) && t.closest('.group')) {
         var gh = t.closest('.group').querySelector('.ghead strong');
         if (gh) gh.textContent = t.value || '未命名小节';
       }
@@ -405,6 +447,9 @@
         );
       } else if (act === 'del-photo') {
         R.basic.photo = '';
+      } else if (act === 'font-reset') {
+        if (!R.meta) R.meta = {};
+        R.meta.font = {};
       } else {
         structural = false;
       }
@@ -425,7 +470,9 @@
     /* 模板切换 */
     $('#tplSelect').addEventListener('change', function (e) {
       state.resume.meta.template = e.target.value;
-      renderPreview(); save();
+      /* 换模板回到该模板自带的字号，避免上一套的手动覆盖串味 */
+      state.resume.meta.font = {};
+      renderEditor(); renderPreview(); save();
     });
 
     /* 导入模板 */
@@ -497,6 +544,7 @@
   function init() {
     if (!load()) state.resume = clone(DEMO);
     if (!state.resume.meta) state.resume.meta = { template: 'classic-blue' };
+    if (!state.resume.meta.font) state.resume.meta.font = {};
     renderTplSelect();
     renderEditor();
     renderPreview();

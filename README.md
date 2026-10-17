@@ -26,7 +26,8 @@
 |---|---|
 | **单文件离线** | 双击 `dist/index.html` 即用。无网络、无安装、无 CDN 依赖 |
 | **实时预览** | 左侧编辑，右侧 A4 实时渲染，所见即所得 |
-| **模板系统** | 4 套内置模板；支持**导入/导出模板 JSON**，别人做的模板可直接拿来用 |
+| **字号可调** | 全局缩放滑块（80%–130%）+ 正文/姓名/头衔/联系方式/小节标题 分项 pt 微调，预览与导出同时生效 |
+| **模板系统** | **10 套内置模板**；支持**导入/导出模板 JSON**，别人做的模板可直接拿来用 |
 | **导出可编辑 Word** | `.docx`，文字可改、图片可换、排版不乱 |
 | **打印成 PDF** | 浏览器打印面板选「另存为 PDF」，投递用 |
 | **数据自持** | 简历数据存本地 `localStorage`，可导出/导入 JSON 备份、换设备继续改 |
@@ -49,7 +50,7 @@
   "id": "classic-blue",
   "name": "经典蓝",
   "page":    { "mTop": 18, "mBottom": 18, "mLeft": 20, "mRight": 20 },
-  "font":    { "family": "Microsoft YaHei", "base": 10 },
+  "font":    { "family": "Microsoft YaHei", "base": 10, "lineSpacing": 1.55 },
   "color":   { "primary": "#1F3A5F", "text": "#333333", "muted": "#666666", "line": "#1F3A5F" },
   "header":  { "nameSize": 22, "titleSize": 11, "contactSize": 9, "photoWidth": 26 },
   "section": { "titleSize": 12, "underline": true, "spaceBefore": 10, "spaceAfter": 4 },
@@ -62,6 +63,7 @@
 | `page.m*` | 上下左右页边距 | mm |
 | `font.family` | 字体名（需系统已安装） | — |
 | `font.base` | 正文字号 | pt |
+| `font.lineSpacing` | 行距倍数（1.55 ≈ 常态，1.38 更紧凑） | 倍数 |
 | `color.*` | 主色 / 正文 / 次要 / 分隔线 | hex |
 | `header.nameSize` 等 | 姓名 / 头衔 / 联系方式字号 | pt |
 | `header.photoWidth` | 照片宽度 | mm |

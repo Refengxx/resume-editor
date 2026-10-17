@@ -155,7 +155,7 @@ select { padding-right: 26px; }
   color: var(--t-text);
   font-family: var(--t-font);
   font-size: calc(var(--t-base) * 1pt);
-  line-height: 1.55;
+  line-height: var(--t-line-height, 1.55);
   padding: var(--t-mt) var(--t-mr) var(--t-mb) var(--t-ml);
   flex: none;
 }
@@ -285,13 +285,13 @@ select { padding-right: 26px; }
 </div>
 
 <script>/* 内置模板：一份配置同时驱动 HTML 预览 与 DOCX 导出。
-   尺寸单位统一为 mm（页面/照片），字号为 pt。 */
+   尺寸单位：页面/照片为 mm，字号为 pt，行距为倍数。 */
 const BUILTIN_TEMPLATES = [
   {
     id: 'classic-blue',
     name: '经典蓝',
     page: { mTop: 18, mBottom: 18, mLeft: 20, mRight: 20 },
-    font: { family: 'Microsoft YaHei', base: 10 },
+    font: { family: 'Microsoft YaHei', base: 10, lineSpacing: 1.55 },
     color: { primary: '#1F3A5F', text: '#333333', muted: '#666666', line: '#1F3A5F' },
     header: { nameSize: 22, titleSize: 11, contactSize: 9, photoWidth: 26 },
     section: { titleSize: 12, underline: true, spaceBefore: 10, spaceAfter: 4 },
@@ -301,7 +301,7 @@ const BUILTIN_TEMPLATES = [
     id: 'minimal-gray',
     name: '简约灰',
     page: { mTop: 16, mBottom: 16, mLeft: 22, mRight: 22 },
-    font: { family: 'Microsoft YaHei', base: 10.5 },
+    font: { family: 'Microsoft YaHei', base: 10.5, lineSpacing: 1.6 },
     color: { primary: '#3D3D3D', text: '#2E2E2E', muted: '#777777', line: '#CCCCCC' },
     header: { nameSize: 21, titleSize: 10.5, contactSize: 9, photoWidth: 24 },
     section: { titleSize: 11, underline: false, spaceBefore: 11, spaceAfter: 4 },
@@ -311,7 +311,7 @@ const BUILTIN_TEMPLATES = [
     id: 'dark-green',
     name: '沉稳绿',
     page: { mTop: 20, mBottom: 20, mLeft: 20, mRight: 20 },
-    font: { family: 'Microsoft YaHei', base: 10 },
+    font: { family: 'Microsoft YaHei', base: 10, lineSpacing: 1.6 },
     color: { primary: '#1B4D3E', text: '#2F3A36', muted: '#6B7C75', line: '#1B4D3E' },
     header: { nameSize: 24, titleSize: 11, contactSize: 9.5, photoWidth: 28 },
     section: { titleSize: 12, underline: true, spaceBefore: 12, spaceAfter: 5 },
@@ -321,11 +321,73 @@ const BUILTIN_TEMPLATES = [
     id: 'compact-blue',
     name: '紧凑蓝（一页装更多）',
     page: { mTop: 12, mBottom: 12, mLeft: 16, mRight: 16 },
-    font: { family: 'Microsoft YaHei', base: 9 },
+    font: { family: 'Microsoft YaHei', base: 9, lineSpacing: 1.38 },
     color: { primary: '#14456B', text: '#333333', muted: '#6A6A6A', line: '#14456B' },
     header: { nameSize: 18, titleSize: 9.5, contactSize: 8.5, photoWidth: 22 },
     section: { titleSize: 10.5, underline: true, spaceBefore: 7, spaceAfter: 3 },
     bullet: { marker: '•', indent: 4 }
+  },
+
+  /* ---------- 以下为新增 ---------- */
+  {
+    id: 'serif-classic',
+    name: '宋体经典',
+    page: { mTop: 19, mBottom: 19, mLeft: 21, mRight: 21 },
+    font: { family: 'SimSun', base: 10.5, lineSpacing: 1.65 },
+    color: { primary: '#1A1A1A', text: '#222222', muted: '#6E6E6E', line: '#333333' },
+    header: { nameSize: 20, titleSize: 11, contactSize: 9.5, photoWidth: 25 },
+    section: { titleSize: 12, underline: true, spaceBefore: 11, spaceAfter: 4 },
+    bullet: { marker: '·', indent: 5 }
+  },
+  {
+    id: 'mono-black',
+    name: '极简黑白',
+    page: { mTop: 17, mBottom: 17, mLeft: 24, mRight: 24 },
+    font: { family: 'Microsoft YaHei', base: 10, lineSpacing: 1.62 },
+    color: { primary: '#000000', text: '#1C1C1C', muted: '#7A7A7A', line: '#E2E2E2' },
+    header: { nameSize: 19, titleSize: 10, contactSize: 8.5, photoWidth: 0 },
+    section: { titleSize: 10.5, underline: false, spaceBefore: 12, spaceAfter: 5 },
+    bullet: { marker: '·', indent: 5 }
+  },
+  {
+    id: 'warm-brown',
+    name: '暖棕书卷',
+    page: { mTop: 20, mBottom: 20, mLeft: 20, mRight: 20 },
+    font: { family: 'SimSun', base: 10.5, lineSpacing: 1.7 },
+    color: { primary: '#6B4A2F', text: '#3A2E25', muted: '#8A7663', line: '#C8A882' },
+    header: { nameSize: 21, titleSize: 11, contactSize: 9, photoWidth: 26 },
+    section: { titleSize: 11.5, underline: true, spaceBefore: 12, spaceAfter: 5 },
+    bullet: { marker: '▪', indent: 5 }
+  },
+  {
+    id: 'orange-vivid',
+    name: '橙红活力',
+    page: { mTop: 16, mBottom: 16, mLeft: 18, mRight: 18 },
+    font: { family: 'Microsoft YaHei', base: 10, lineSpacing: 1.5 },
+    color: { primary: '#E1523D', text: '#2B2B2B', muted: '#7C7C7C', line: '#F2B7AE' },
+    header: { nameSize: 24, titleSize: 11.5, contactSize: 9, photoWidth: 27 },
+    section: { titleSize: 12.5, underline: true, spaceBefore: 10, spaceAfter: 4 },
+    bullet: { marker: '▪', indent: 5 }
+  },
+  {
+    id: 'slate-pro',
+    name: '深灰商务',
+    page: { mTop: 15, mBottom: 15, mLeft: 19, mRight: 19 },
+    font: { family: 'SimHei', base: 9.8, lineSpacing: 1.45 },
+    color: { primary: '#263238', text: '#37474F', muted: '#78909C', line: '#37474F' },
+    header: { nameSize: 21, titleSize: 10.5, contactSize: 9, photoWidth: 30 },
+    section: { titleSize: 11, underline: true, spaceBefore: 9, spaceAfter: 3 },
+    bullet: { marker: '•', indent: 4.5 }
+  },
+  {
+    id: 'teal-fresh',
+    name: '清爽青',
+    page: { mTop: 18, mBottom: 18, mLeft: 20, mRight: 20 },
+    font: { family: 'Microsoft YaHei', base: 10.2, lineSpacing: 1.6 },
+    color: { primary: '#0F766E', text: '#2C3A38', muted: '#6B8481', line: '#9CC9C4' },
+    header: { nameSize: 22, titleSize: 11, contactSize: 9, photoWidth: 25 },
+    section: { titleSize: 11.5, underline: false, spaceBefore: 11, spaceAfter: 4 },
+    bullet: { marker: '▪', indent: 5 }
   }
 ];
 
@@ -334,7 +396,7 @@ const TEMPLATE_FALLBACK = {
   id: 'imported',
   name: '导入的模板',
   page: { mTop: 18, mBottom: 18, mLeft: 20, mRight: 20 },
-  font: { family: 'Microsoft YaHei', base: 10 },
+  font: { family: 'Microsoft YaHei', base: 10, lineSpacing: 1.55 },
   color: { primary: '#1F3A5F', text: '#333333', muted: '#666666', line: '#1F3A5F' },
   header: { nameSize: 22, titleSize: 11, contactSize: 9, photoWidth: 26 },
   section: { titleSize: 12, underline: true, spaceBefore: 10, spaceAfter: 4 },
@@ -534,7 +596,7 @@ function normalizeTemplate(t) {
               size: Math.round(base * 2),
               color: hex(C.text),
             },
-            paragraph: { spacing: { line: 300 } },
+            paragraph: { spacing: { line: Math.round((T.font.lineSpacing || 1.55) * 240), lineRule: 'auto' } },
           },
         },
       },
@@ -39534,6 +39596,23 @@ while (n === a[++i] && n === a[++i] && n === a[++i] && n === a[++i] && n === a[+
     return normalizeTemplate(BUILTIN_TEMPLATES[0]);
   }
 
+  /* 模板 + 用户字号覆盖 → 实际生效的模板。
+     优先用用户填的绝对 pt，再乘全局缩放；两项可叠加。 */
+  function r1(v) { return Math.round(v * 10) / 10; }
+
+  function effectiveTemplate() {
+    var T = currentTemplate();
+    var f = (state.resume.meta && state.resume.meta.font) || {};
+    var s = num(f.scale, 100) / 100;
+    function pick(ov, tv) { var v = num(ov, 0); return r1((v > 0 ? v : tv) * s); }
+    T.font.base = pick(f.base, T.font.base);
+    T.header.nameSize = pick(f.name, T.header.nameSize);
+    T.header.titleSize = pick(f.title, T.header.titleSize);
+    T.header.contactSize = pick(f.contact, T.header.contactSize);
+    T.section.titleSize = pick(f.sectionTitle, T.section.titleSize);
+    return T;
+  }
+
   /* ---------------- 存储 ---------------- */
   function save() {
     clearTimeout(saveTimer);
@@ -39589,6 +39668,26 @@ while (n === a[++i] && n === a[++i] && n === a[++i] && n === a[++i] && n === a[+
          (b.photo ? '<div style="margin-top:6px"><img src="' + b.photo + '" style="height:56px;border:1px solid #dde;border-radius:4px"></div>' : '') +
          '</div>';
     h += '</div>';
+
+    /* 字号控制 */
+    var F = (R.meta && R.meta.font) || {};
+    var T0 = currentTemplate();
+    var sc = num(F.scale, 100);
+    h += '<div class="group"><div class="ghead"><strong>字号</strong><div class="ops">' +
+         '<button type="button" data-act="font-reset">恢复模板字号</button></div></div>';
+    h += '<div class="field"><label>全局缩放 <b data-live-scale style="color:#2f6fed">' + sc + '%</b>' +
+         '　→ 正文实际 ' + r1(T0.font.base * sc / 100) + ' pt</label>' +
+         '<input type="range" data-path="meta.font.scale" min="80" max="130" step="5" value="' + sc + '"></div>';
+    h += '<div class="grid2">' +
+         field('meta.font.base', '正文 (pt，留空=模板)', F.base || '', T0.font.base) +
+         field('meta.font.sectionTitle', '小节标题 (pt)', F.sectionTitle || '', T0.section.titleSize) +
+         '</div>';
+    h += '<div class="grid2">' +
+         field('meta.font.name', '姓名 (pt)', F.name || '', T0.header.nameSize) +
+         field('meta.font.title', '头衔 (pt)', F.title || '', T0.header.titleSize) +
+         '</div>';
+    h += field('meta.font.contact', '联系方式 (pt)', F.contact || '', T0.header.contactSize);
+    h += '<div class="hint">缩放会乘在所有字号上；左边填具体 pt 则覆盖模板值，两者叠加生效。</div></div>';
 
     /* 各小节 */
     R.sections.forEach(function (sec, si) {
@@ -39666,7 +39765,8 @@ while (n === a[++i] && n === a[++i] && n === a[++i] && n === a[++i] && n === a[+
     ['--t-sec-title', function (T) { return T.section.titleSize; }],
     ['--t-sec-before', function (T) { return T.section.spaceBefore; }],
     ['--t-sec-after', function (T) { return T.section.spaceAfter; }],
-    ['--t-bullet-indent', function (T) { return T.bullet.indent; }]
+    ['--t-bullet-indent', function (T) { return T.bullet.indent; }],
+    ['--t-line-height', function (T) { return T.font.lineSpacing || 1.55; }]
   ];
 
   function applyTemplate(T) {
@@ -39729,7 +39829,7 @@ while (n === a[++i] && n === a[++i] && n === a[++i] && n === a[++i] && n === a[+
   }
 
   function renderPreview() {
-    var T = currentTemplate();
+    var T = effectiveTemplate();
     applyTemplate(T);
     $('#page').innerHTML = buildPreview(state.resume, T);
   }
@@ -39792,7 +39892,7 @@ while (n === a[++i] && n === a[++i] && n === a[++i] && n === a[++i] && n === a[+
     var old = btn.textContent;
     btn.disabled = true; btn.textContent = '生成中…';
     try {
-      var T = currentTemplate();
+      var T = effectiveTemplate();
       var photo = null;
       if (state.resume.basic.photo) {
         var raw = dataUrlToBytes(state.resume.basic.photo);
@@ -39817,7 +39917,11 @@ while (n === a[++i] && n === a[++i] && n === a[++i] && n === a[++i] && n === a[+
       var t = e.target, p = t.getAttribute && t.getAttribute('data-path');
       if (!p) return;
       setPath(state.resume, p, t.value);
-      if (p.indexOf('.title') > -1 && t.closest('.group')) {
+      if (p === 'meta.font.scale') {
+        var live = t.closest('.field') && t.closest('.field').querySelector('[data-live-scale]');
+        if (live) live.textContent = t.value + '%';
+      }
+      if (/^sections\.\d+\.title$/.test(p) && t.closest('.group')) {
         var gh = t.closest('.group').querySelector('.ghead strong');
         if (gh) gh.textContent = t.value || '未命名小节';
       }
@@ -39869,6 +39973,9 @@ while (n === a[++i] && n === a[++i] && n === a[++i] && n === a[++i] && n === a[+
         );
       } else if (act === 'del-photo') {
         R.basic.photo = '';
+      } else if (act === 'font-reset') {
+        if (!R.meta) R.meta = {};
+        R.meta.font = {};
       } else {
         structural = false;
       }
@@ -39889,7 +39996,9 @@ while (n === a[++i] && n === a[++i] && n === a[++i] && n === a[++i] && n === a[+
     /* 模板切换 */
     $('#tplSelect').addEventListener('change', function (e) {
       state.resume.meta.template = e.target.value;
-      renderPreview(); save();
+      /* 换模板回到该模板自带的字号，避免上一套的手动覆盖串味 */
+      state.resume.meta.font = {};
+      renderEditor(); renderPreview(); save();
     });
 
     /* 导入模板 */
@@ -39961,6 +40070,7 @@ while (n === a[++i] && n === a[++i] && n === a[++i] && n === a[++i] && n === a[+
   function init() {
     if (!load()) state.resume = clone(DEMO);
     if (!state.resume.meta) state.resume.meta = { template: 'classic-blue' };
+    if (!state.resume.meta.font) state.resume.meta.font = {};
     renderTplSelect();
     renderEditor();
     renderPreview();

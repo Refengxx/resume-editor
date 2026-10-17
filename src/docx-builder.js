@@ -176,7 +176,7 @@
               size: Math.round(base * 2),
               color: hex(C.text),
             },
-            paragraph: { spacing: { line: 300 } },
+            paragraph: { spacing: { line: Math.round((T.font.lineSpacing || 1.55) * 240), lineRule: 'auto' } },
           },
         },
       },
