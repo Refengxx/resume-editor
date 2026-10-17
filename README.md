@@ -2,6 +2,12 @@
 
 单文件、离线可用、**导出的 Word 里文字和图片都还能改**的简历工具。
 
+## 在线使用
+
+**👉 https://refengxx.github.io/resume-editor/**
+
+打开就能用，不用装任何东西。也可以下载 [`dist/index.html`](dist/index.html) 离线使用（断网也能跑）。
+
 ## 为什么做这个
 
 现成的免费简历站（包括一些高星开源项目）导出走的是 `html2canvas` 截图 → PDF 的路线。
