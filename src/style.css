@@ -1,0 +1,251 @@
+* { box-sizing: border-box; }
+
+:root {
+  --ui-bg: #eef1f5;
+  --ui-panel: #ffffff;
+  --ui-border: #d8dee6;
+  --ui-accent: #2f6fed;
+  --ui-text: #23303f;
+}
+
+html, body {
+  margin: 0;
+  height: 100%;
+  font-family: "Microsoft YaHei", -apple-system, "Segoe UI", sans-serif;
+  color: var(--ui-text);
+  background: var(--ui-bg);
+}
+
+/* ---------- 顶部工具栏 ---------- */
+.toolbar {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+  padding: 10px 14px;
+  background: var(--ui-panel);
+  border-bottom: 1px solid var(--ui-border);
+  position: sticky;
+  top: 0;
+  z-index: 20;
+}
+
+.toolbar h1 {
+  font-size: 15px;
+  margin: 0 10px 0 0;
+  font-weight: 700;
+  letter-spacing: .3px;
+}
+
+.toolbar .spacer { flex: 1; }
+
+button, select, label.btn {
+  font-family: inherit;
+  font-size: 13px;
+  padding: 6px 12px;
+  border: 1px solid var(--ui-border);
+  border-radius: 6px;
+  background: #fff;
+  color: var(--ui-text);
+  cursor: pointer;
+  transition: .15s;
+}
+button:hover, select:hover, label.btn:hover { border-color: var(--ui-accent); color: var(--ui-accent); }
+button.primary { background: var(--ui-accent); border-color: var(--ui-accent); color: #fff; }
+button.primary:hover { filter: brightness(1.08); color: #fff; }
+button.danger:hover { border-color: #d64545; color: #d64545; }
+
+select { padding-right: 26px; }
+
+/* ---------- 主体两栏 ---------- */
+.main {
+  display: grid;
+  grid-template-columns: minmax(320px, 420px) 1fr;
+  height: calc(100vh - 57px);
+}
+
+.editor {
+  overflow-y: auto;
+  padding: 16px;
+  background: var(--ui-panel);
+  border-right: 1px solid var(--ui-border);
+}
+
+.preview-wrap {
+  overflow: auto;
+  padding: 24px;
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+}
+
+/* ---------- 编辑面板 ---------- */
+.field { margin-bottom: 10px; }
+.field label {
+  display: block;
+  font-size: 12px;
+  color: #5b6b7c;
+  margin-bottom: 3px;
+}
+.field input, .field textarea {
+  width: 100%;
+  font-family: inherit;
+  font-size: 13px;
+  padding: 7px 9px;
+  border: 1px solid var(--ui-border);
+  border-radius: 5px;
+  background: #fbfcfd;
+  resize: vertical;
+}
+.field input:focus, .field textarea:focus {
+  outline: none;
+  border-color: var(--ui-accent);
+  background: #fff;
+}
+
+.grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+
+.group {
+  border: 1px solid var(--ui-border);
+  border-radius: 8px;
+  padding: 10px 12px;
+  margin-bottom: 12px;
+  background: #fafbfc;
+}
+.group > .ghead {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 8px;
+}
+.group > .ghead strong { font-size: 13px; }
+.group > .ghead .ops { display: flex; gap: 6px; }
+.group > .ghead button { padding: 3px 8px; font-size: 12px; }
+
+.item-card {
+  border: 1px dashed var(--ui-border);
+  border-radius: 6px;
+  padding: 8px 10px;
+  margin-bottom: 8px;
+  background: #fff;
+}
+.item-card .ih {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 6px;
+  font-size: 12px;
+  color: #7a8899;
+}
+
+.hint { font-size: 11.5px; color: #8a97a6; line-height: 1.6; }
+
+/* ---------- A4 预览页 ---------- */
+.page {
+  width: 210mm;
+  min-height: 297mm;
+  background: #fff;
+  box-shadow: 0 3px 18px rgba(20, 40, 70, .16);
+  color: var(--t-text);
+  font-family: var(--t-font);
+  font-size: calc(var(--t-base) * 1pt);
+  line-height: 1.55;
+  padding: var(--t-mt) var(--t-mr) var(--t-mb) var(--t-ml);
+  flex: none;
+}
+
+/* 头部：左信息 / 右照片 */
+.p-header { display: flex; align-items: flex-start; gap: 12px; }
+.p-header .ph-left { flex: 1; min-width: 0; }
+.p-name {
+  font-size: calc(var(--t-name) * 1pt);
+  font-weight: 700;
+  color: var(--t-primary);
+  line-height: 1.2;
+  letter-spacing: 1px;
+}
+.p-title {
+  font-size: calc(var(--t-title) * 1pt);
+  color: var(--t-text);
+  margin-top: 4px;
+}
+.p-contact {
+  font-size: calc(var(--t-contact) * 1pt);
+  color: var(--t-muted);
+  margin-top: 6px;
+  word-break: break-all;
+}
+.p-photo {
+  width: calc(var(--t-photo) * 1mm);
+  flex: none;
+}
+.p-photo img {
+  width: 100%;
+  display: block;
+  border-radius: 2px;
+}
+
+/* 小节 */
+.p-section { margin-top: calc(var(--t-sec-before) * 1pt); }
+.p-section > .st {
+  font-size: calc(var(--t-sec-title) * 1pt);
+  font-weight: 700;
+  color: var(--t-primary);
+  padding-bottom: 3px;
+  letter-spacing: .5px;
+}
+.p-section.underline > .st { border-bottom: 1.2px solid var(--t-line); }
+.p-section > .sb { margin-top: calc(var(--t-sec-after) * 1pt); }
+
+.p-para { white-space: pre-wrap; color: var(--t-text); }
+
+.p-item { margin-bottom: 8px; }
+.p-item:last-child { margin-bottom: 0; }
+.p-item .ii-row1 { display: flex; justify-content: space-between; gap: 10px; }
+.p-item .ii-org { font-weight: 700; color: var(--t-text); }
+.p-item .ii-role { color: var(--t-text); }
+.p-item .ii-period { color: var(--t-muted); white-space: nowrap; font-size: .95em; }
+
+.p-bullet {
+  display: flex;
+  gap: 6px;
+  margin-top: 2px;
+  color: var(--t-text);
+}
+.p-bullet > .bm {
+  flex: none;
+  width: calc(var(--t-bullet-indent) * 1mm);
+  text-align: right;
+  color: var(--t-primary);
+}
+.p-bullet > .bt { flex: 1; min-width: 0; white-space: pre-wrap; }
+
+.p-kv { display: flex; gap: 6px; margin-bottom: 2px; }
+.p-kv > .kk { font-weight: 700; color: var(--t-text); flex: none; }
+.p-kv > .vv { color: var(--t-text); }
+
+/* 空状态 */
+.p-empty { color: #c3ccd6; font-size: 12px; }
+
+/* ---------- 打印 / 存为 PDF ---------- */
+@page { size: A4; margin: 0; }
+
+@media print {
+  html, body { background: #fff !important; height: auto; }
+  .toolbar, .editor, .hint { display: none !important; }
+  .main { display: block; height: auto; }
+  .preview-wrap { padding: 0; display: block; overflow: visible; }
+  .page {
+    box-shadow: none !important;
+    width: 210mm;
+    min-height: 297mm;
+    margin: 0 auto;
+  }
+  .p-item, .p-bullet, .p-section { break-inside: avoid; }
+}
+
+/* ---------- 窄屏 ---------- */
+@media (max-width: 900px) {
+  .main { grid-template-columns: 1fr; height: auto; }
+  .editor { border-right: none; border-bottom: 1px solid var(--ui-border); max-height: 46vh; }
+}
