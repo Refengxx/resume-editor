@@ -18,6 +18,11 @@
 
   <span class="spacer"></span>
 
+  <span class="mode-switch">
+    <button type="button" data-mode="edit" class="on">编辑</button>
+    <button type="button" data-mode="view">预览</button>
+  </span>
+
   <label class="btn" for="resumeImport">导入简历</label>
   <input id="resumeImport" type="file" accept=".json,application/json" hidden>
   <button id="resumeExport" title="导出简历数据（可备份、换设备继续改）">导出简历 JSON</button>
@@ -29,7 +34,11 @@
 <div class="main">
   <aside class="editor" id="editor"></aside>
   <div class="preview-wrap">
-    <div class="page" id="page"></div>
+    <div class="page-scaler" id="pageScaler">
+      <div class="page-holder" id="pageHolder">
+        <div class="page" id="page"></div>
+      </div>
+    </div>
   </div>
 </div>
 

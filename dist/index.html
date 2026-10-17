@@ -79,10 +79,21 @@ select { padding-right: 26px; }
 
 .preview-wrap {
   overflow: auto;
-  padding: 24px;
+  padding: 16px;
   display: flex;
   justify-content: center;
   align-items: flex-start;
+}
+
+/* A4 缩放容器：窄屏时由 JS 设置 transform / height */
+.page-scaler { flex: none; overflow: hidden; }
+.page-holder { width: 210mm; transform-origin: top left; }
+
+.mode-switch { display: none; gap: 6px; }
+.mode-switch button.on {
+  background: var(--ui-accent);
+  border-color: var(--ui-accent);
+  color: #fff;
 }
 
 /* ---------- 编辑面板 ---------- */
@@ -265,9 +276,24 @@ select { padding-right: 26px; }
 
 @media print {
   html, body { background: #fff !important; height: auto; }
-  .toolbar, .editor, .hint { display: none !important; }
+  .toolbar, .editor, .hint, .mode-switch { display: none !important; }
   .main { display: block; height: auto; }
-  .preview-wrap { padding: 0; display: block; overflow: visible; }
+  .preview-wrap {
+    display: block !important;
+    padding: 0;
+    overflow: visible;
+  }
+  /* 打印必须回到 1:1，不管屏幕上缩成了多少 */
+  .page-scaler {
+    width: auto !important;
+    height: auto !important;
+    overflow: visible !important;
+  }
+  .page-holder {
+    transform: none !important;
+    margin-left: 0 !important;
+    width: auto !important;
+  }
   .page {
     box-shadow: none !important;
     width: 210mm;
@@ -277,10 +303,45 @@ select { padding-right: 26px; }
   .p-item, .p-bullet, .p-section { break-inside: avoid; }
 }
 
-/* ---------- 窄屏 ---------- */
+/* ---------- 手机 / 窄屏 ---------- */
 @media (max-width: 900px) {
-  .main { grid-template-columns: 1fr; height: auto; }
-  .editor { border-right: none; border-bottom: 1px solid var(--ui-border); max-height: 46vh; }
+  .main { display: block; height: auto; }
+
+  .toolbar {
+    gap: 6px;
+    padding: 8px 10px;
+  }
+  .toolbar h1 { font-size: 14px; margin: 0 6px 0 0; }
+  .toolbar .spacer { display: none; }
+  .toolbar button, .toolbar select, .toolbar label.btn {
+    font-size: 12.5px;
+    padding: 7px 10px;
+  }
+
+  /* 手机上编辑 / 预览二选一，避免长表单和 A4 混在一起滚 */
+  .mode-switch { display: flex; margin-left: auto; }
+  body.mode-edit .preview-wrap { display: none; }
+  body.mode-view .editor { display: none; }
+
+  .editor {
+    border-right: none;
+    border-bottom: 1px solid var(--ui-border);
+    max-height: none;
+    padding: 12px;
+  }
+
+  .preview-wrap {
+    padding: 10px 8px 32px;
+    overflow: visible;
+  }
+
+  /* 输入框字号 >= 16px，避免 iOS 聚焦时把整页放大 */
+  .field input, .field textarea, .field select { font-size: 16px; }
+
+  /* 触屏没有原生拖拽，所以去掉把手、把 ↑↓ 做大好点 */
+  .sec-group > .ghead { cursor: default; }
+  .group > .ghead .grip { display: none; }
+  .group > .ghead button { padding: 9px 13px; font-size: 15px; }
 }
 </style>
 </head>
@@ -296,6 +357,11 @@ select { padding-right: 26px; }
 
   <span class="spacer"></span>
 
+  <span class="mode-switch">
+    <button type="button" data-mode="edit" class="on">编辑</button>
+    <button type="button" data-mode="view">预览</button>
+  </span>
+
   <label class="btn" for="resumeImport">导入简历</label>
   <input id="resumeImport" type="file" accept=".json,application/json" hidden>
   <button id="resumeExport" title="导出简历数据（可备份、换设备继续改）">导出简历 JSON</button>
@@ -307,7 +373,11 @@ select { padding-right: 26px; }
 <div class="main">
   <aside class="editor" id="editor"></aside>
   <div class="preview-wrap">
-    <div class="page" id="page"></div>
+    <div class="page-scaler" id="pageScaler">
+      <div class="page-holder" id="pageHolder">
+        <div class="page" id="page"></div>
+      </div>
+    </div>
   </div>
 </div>
 
@@ -39918,10 +39988,49 @@ while (n === a[++i] && n === a[++i] && n === a[++i] && n === a[++i] && n === a[+
     return h;
   }
 
+  /* ---------- 窄屏：把 A4 等比缩到可视宽度 ---------- */
+  var A4_W_PX = 210 * 96 / 25.4;   /* 793.7px @ 96dpi */
+
+  function syncPageScale() {
+    var page = $('#page'), holder = $('#pageHolder'), scaler = $('#pageScaler');
+    if (!page || !holder || !scaler) return;
+    var wrap = scaler.parentElement;
+    if (!wrap) return;
+    var cs = getComputedStyle(wrap);
+    var avail = wrap.clientWidth - parseFloat(cs.paddingLeft || 0) - parseFloat(cs.paddingRight || 0);
+    if (!avail || avail <= 0) return;
+
+    var realH = page.offsetHeight;              /* 未缩放高度（transform 不影响布局） */
+    var s = Math.min(1, avail / A4_W_PX);
+
+    if (s >= 0.999) {
+      holder.style.transform = '';
+      holder.style.marginLeft = '0px';
+      scaler.style.width = '';
+      scaler.style.height = '';
+    } else {
+      holder.style.transform = 'scale(' + s + ')';
+      holder.style.marginLeft = Math.max(0, Math.round((avail - A4_W_PX * s) / 2)) + 'px';
+      scaler.style.width = Math.round(avail) + 'px';
+      scaler.style.height = Math.round(realH * s) + 'px';
+    }
+  }
+
   function renderPreview() {
     var T = effectiveTemplate();
     applyTemplate(T);
     $('#page').innerHTML = buildPreview(state.resume, T);
+    syncPageScale();
+  }
+
+  /* 手机端 编辑 / 预览 切换（桌面端该类无样式，不影响） */
+  function setMode(m) {
+    document.body.classList.remove('mode-edit', 'mode-view');
+    document.body.classList.add('mode-' + m);
+    $$('.mode-switch button').forEach(function (b) {
+      b.classList.toggle('on', b.getAttribute('data-mode') === m);
+    });
+    setTimeout(syncPageScale, 30);
   }
 
   /* ---------------- 工具栏 ---------------- */
@@ -40212,6 +40321,21 @@ while (n === a[++i] && n === a[++i] && n === a[++i] && n === a[++i] && n === a[+
     /* 打印 */
     $('#printBtn').addEventListener('click', function () { window.print(); });
 
+    /* 手机：编辑 / 预览切换 */
+    $$('.mode-switch button').forEach(function (b) {
+      b.addEventListener('click', function () { setMode(b.getAttribute('data-mode')); });
+    });
+
+    /* 尺寸变化后重算 A4 缩放 */
+    var rzTimer = null;
+    window.addEventListener('resize', function () {
+      clearTimeout(rzTimer);
+      rzTimer = setTimeout(syncPageScale, 120);
+    });
+    window.addEventListener('orientationchange', function () {
+      setTimeout(syncPageScale, 260);
+    });
+
     /* 导出 DOCX */
     $('#docxBtn').addEventListener('click', exportDocx);
   }
@@ -40230,6 +40354,9 @@ while (n === a[++i] && n === a[++i] && n === a[++i] && n === a[++i] && n === a[+
     renderEditor();
     renderPreview();
     bind();
+    document.body.classList.add('mode-edit');
+    /* 首屏布局稳定后再量一次尺寸 */
+    setTimeout(syncPageScale, 80);
   }
 
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init);

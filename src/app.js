@@ -360,10 +360,49 @@
     return h;
   }
 
+  /* ---------- 窄屏：把 A4 等比缩到可视宽度 ---------- */
+  var A4_W_PX = 210 * 96 / 25.4;   /* 793.7px @ 96dpi */
+
+  function syncPageScale() {
+    var page = $('#page'), holder = $('#pageHolder'), scaler = $('#pageScaler');
+    if (!page || !holder || !scaler) return;
+    var wrap = scaler.parentElement;
+    if (!wrap) return;
+    var cs = getComputedStyle(wrap);
+    var avail = wrap.clientWidth - parseFloat(cs.paddingLeft || 0) - parseFloat(cs.paddingRight || 0);
+    if (!avail || avail <= 0) return;
+
+    var realH = page.offsetHeight;              /* 未缩放高度（transform 不影响布局） */
+    var s = Math.min(1, avail / A4_W_PX);
+
+    if (s >= 0.999) {
+      holder.style.transform = '';
+      holder.style.marginLeft = '0px';
+      scaler.style.width = '';
+      scaler.style.height = '';
+    } else {
+      holder.style.transform = 'scale(' + s + ')';
+      holder.style.marginLeft = Math.max(0, Math.round((avail - A4_W_PX * s) / 2)) + 'px';
+      scaler.style.width = Math.round(avail) + 'px';
+      scaler.style.height = Math.round(realH * s) + 'px';
+    }
+  }
+
   function renderPreview() {
     var T = effectiveTemplate();
     applyTemplate(T);
     $('#page').innerHTML = buildPreview(state.resume, T);
+    syncPageScale();
+  }
+
+  /* 手机端 编辑 / 预览 切换（桌面端该类无样式，不影响） */
+  function setMode(m) {
+    document.body.classList.remove('mode-edit', 'mode-view');
+    document.body.classList.add('mode-' + m);
+    $$('.mode-switch button').forEach(function (b) {
+      b.classList.toggle('on', b.getAttribute('data-mode') === m);
+    });
+    setTimeout(syncPageScale, 30);
   }
 
   /* ---------------- 工具栏 ---------------- */
@@ -654,6 +693,21 @@
     /* 打印 */
     $('#printBtn').addEventListener('click', function () { window.print(); });
 
+    /* 手机：编辑 / 预览切换 */
+    $$('.mode-switch button').forEach(function (b) {
+      b.addEventListener('click', function () { setMode(b.getAttribute('data-mode')); });
+    });
+
+    /* 尺寸变化后重算 A4 缩放 */
+    var rzTimer = null;
+    window.addEventListener('resize', function () {
+      clearTimeout(rzTimer);
+      rzTimer = setTimeout(syncPageScale, 120);
+    });
+    window.addEventListener('orientationchange', function () {
+      setTimeout(syncPageScale, 260);
+    });
+
     /* 导出 DOCX */
     $('#docxBtn').addEventListener('click', exportDocx);
   }
@@ -672,6 +726,9 @@
     renderEditor();
     renderPreview();
     bind();
+    document.body.classList.add('mode-edit');
+    /* 首屏布局稳定后再量一次尺寸 */
+    setTimeout(syncPageScale, 80);
   }
 
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init);

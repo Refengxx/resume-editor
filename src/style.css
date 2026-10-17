@@ -73,10 +73,21 @@ select { padding-right: 26px; }
 
 .preview-wrap {
   overflow: auto;
-  padding: 24px;
+  padding: 16px;
   display: flex;
   justify-content: center;
   align-items: flex-start;
+}
+
+/* A4 缩放容器：窄屏时由 JS 设置 transform / height */
+.page-scaler { flex: none; overflow: hidden; }
+.page-holder { width: 210mm; transform-origin: top left; }
+
+.mode-switch { display: none; gap: 6px; }
+.mode-switch button.on {
+  background: var(--ui-accent);
+  border-color: var(--ui-accent);
+  color: #fff;
 }
 
 /* ---------- 编辑面板 ---------- */
@@ -259,9 +270,24 @@ select { padding-right: 26px; }
 
 @media print {
   html, body { background: #fff !important; height: auto; }
-  .toolbar, .editor, .hint { display: none !important; }
+  .toolbar, .editor, .hint, .mode-switch { display: none !important; }
   .main { display: block; height: auto; }
-  .preview-wrap { padding: 0; display: block; overflow: visible; }
+  .preview-wrap {
+    display: block !important;
+    padding: 0;
+    overflow: visible;
+  }
+  /* 打印必须回到 1:1，不管屏幕上缩成了多少 */
+  .page-scaler {
+    width: auto !important;
+    height: auto !important;
+    overflow: visible !important;
+  }
+  .page-holder {
+    transform: none !important;
+    margin-left: 0 !important;
+    width: auto !important;
+  }
   .page {
     box-shadow: none !important;
     width: 210mm;
@@ -271,8 +297,43 @@ select { padding-right: 26px; }
   .p-item, .p-bullet, .p-section { break-inside: avoid; }
 }
 
-/* ---------- 窄屏 ---------- */
+/* ---------- 手机 / 窄屏 ---------- */
 @media (max-width: 900px) {
-  .main { grid-template-columns: 1fr; height: auto; }
-  .editor { border-right: none; border-bottom: 1px solid var(--ui-border); max-height: 46vh; }
+  .main { display: block; height: auto; }
+
+  .toolbar {
+    gap: 6px;
+    padding: 8px 10px;
+  }
+  .toolbar h1 { font-size: 14px; margin: 0 6px 0 0; }
+  .toolbar .spacer { display: none; }
+  .toolbar button, .toolbar select, .toolbar label.btn {
+    font-size: 12.5px;
+    padding: 7px 10px;
+  }
+
+  /* 手机上编辑 / 预览二选一，避免长表单和 A4 混在一起滚 */
+  .mode-switch { display: flex; margin-left: auto; }
+  body.mode-edit .preview-wrap { display: none; }
+  body.mode-view .editor { display: none; }
+
+  .editor {
+    border-right: none;
+    border-bottom: 1px solid var(--ui-border);
+    max-height: none;
+    padding: 12px;
+  }
+
+  .preview-wrap {
+    padding: 10px 8px 32px;
+    overflow: visible;
+  }
+
+  /* 输入框字号 >= 16px，避免 iOS 聚焦时把整页放大 */
+  .field input, .field textarea, .field select { font-size: 16px; }
+
+  /* 触屏没有原生拖拽，所以去掉把手、把 ↑↓ 做大好点 */
+  .sec-group > .ghead { cursor: default; }
+  .group > .ghead .grip { display: none; }
+  .group > .ghead button { padding: 9px 13px; font-size: 15px; }
 }
