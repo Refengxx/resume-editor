@@ -6,7 +6,7 @@
   var LS_TPLS = 'resume-editor/v1/templates';
 
   var DEMO = {
-    meta: { template: 'classic-blue' },
+    meta: { template: 'classic-blue', over: {} },
     basic: {
       name: '张 三',
       title: '后端开发工程师  ·  3 年经验',
@@ -70,20 +70,34 @@
     return normalizeTemplate(BUILTIN_TEMPLATES[0]);
   }
 
-  /* 模板 + 用户字号覆盖 → 实际生效的模板。
-     优先用用户填的绝对 pt，再乘全局缩放；两项可叠加。 */
   function r1(v) { return Math.round(v * 10) / 10; }
 
+  /* 模板 + 用户覆盖 → 实际生效的模板。
+     字号：先取覆盖的绝对 pt（没填就用模板值），再乘全局缩放。
+     字重 / 页边距 / 小节间距：只做绝对覆盖，不参与缩放。 */
   function effectiveTemplate() {
     var T = currentTemplate();
-    var f = (state.resume.meta && state.resume.meta.font) || {};
-    var s = num(f.scale, 100) / 100;
-    function pick(ov, tv) { var v = num(ov, 0); return r1((v > 0 ? v : tv) * s); }
-    T.font.base = pick(f.base, T.font.base);
-    T.header.nameSize = pick(f.name, T.header.nameSize);
-    T.header.titleSize = pick(f.title, T.header.titleSize);
-    T.header.contactSize = pick(f.contact, T.header.contactSize);
-    T.section.titleSize = pick(f.sectionTitle, T.section.titleSize);
+    var o = (state.resume.meta && state.resume.meta.over) || {};
+    var s = num(o.scale, 100) / 100;
+    function pickSize(ov, tv) { var v = num(ov, 0); return r1((v > 0 ? v : tv) * s); }
+    function pickAbs(ov, tv) { var v = num(ov, 0); return v > 0 ? v : tv; }
+
+    T.font.base = pickSize(o.base, T.font.base);
+    T.header.nameSize = pickSize(o.name, T.header.nameSize);
+    T.header.titleSize = pickSize(o.title, T.header.titleSize);
+    T.header.contactSize = pickSize(o.contact, T.header.contactSize);
+    T.section.titleSize = pickSize(o.sectionTitle, T.section.titleSize);
+
+    T.weight.name = pickAbs(o.wName, T.weight.name);
+    T.weight.sectionTitle = pickAbs(o.wSection, T.weight.sectionTitle);
+
+    T.page.mTop = pickAbs(o.pTop, T.page.mTop);
+    T.page.mBottom = pickAbs(o.pBottom, T.page.mBottom);
+    T.page.mLeft = pickAbs(o.pLeft, T.page.mLeft);
+    T.page.mRight = pickAbs(o.pRight, T.page.mRight);
+
+    T.section.spaceBefore = pickAbs(o.secBefore, T.section.spaceBefore);
+    T.section.spaceAfter = pickAbs(o.secAfter, T.section.spaceAfter);
     return T;
   }
 
@@ -143,33 +157,70 @@
          '</div>';
     h += '</div>';
 
-    /* 字号控制 */
-    var F = (R.meta && R.meta.font) || {};
+    /* 字号 / 字重 / 版面 */
+    var O = (R.meta && R.meta.over) || {};
     var T0 = currentTemplate();
-    var sc = num(F.scale, 100);
+    var sc = num(O.scale, 100);
+
     h += '<div class="group"><div class="ghead"><strong>字号</strong><div class="ops">' +
-         '<button type="button" data-act="font-reset">恢复模板字号</button></div></div>';
+         '<button type="button" data-act="over-reset">恢复模板默认</button></div></div>';
     h += '<div class="field"><label>全局缩放 <b data-live-scale style="color:#2f6fed">' + sc + '%</b>' +
          '　→ 正文实际 ' + r1(T0.font.base * sc / 100) + ' pt</label>' +
-         '<input type="range" data-path="meta.font.scale" min="80" max="130" step="5" value="' + sc + '"></div>';
+         '<input type="range" data-path="meta.over.scale" min="80" max="130" step="5" value="' + sc + '"></div>';
     h += '<div class="grid2">' +
-         field('meta.font.base', '正文 (pt，留空=模板)', F.base || '', T0.font.base) +
-         field('meta.font.sectionTitle', '小节标题 (pt)', F.sectionTitle || '', T0.section.titleSize) +
+         field('meta.over.base', '正文 (pt，留空=模板)', O.base || '', T0.font.base) +
+         field('meta.over.sectionTitle', '小节标题 (pt)', O.sectionTitle || '', T0.section.titleSize) +
          '</div>';
     h += '<div class="grid2">' +
-         field('meta.font.name', '姓名 (pt)', F.name || '', T0.header.nameSize) +
-         field('meta.font.title', '头衔 (pt)', F.title || '', T0.header.titleSize) +
+         field('meta.over.name', '姓名 (pt)', O.name || '', T0.header.nameSize) +
+         field('meta.over.title', '头衔 (pt)', O.title || '', T0.header.titleSize) +
          '</div>';
-    h += field('meta.font.contact', '联系方式 (pt)', F.contact || '', T0.header.contactSize);
-    h += '<div class="hint">缩放会乘在所有字号上；左边填具体 pt 则覆盖模板值，两者叠加生效。</div></div>';
+    h += field('meta.over.contact', '联系方式 (pt)', O.contact || '', T0.header.contactSize);
+    h += '<div class="hint">缩放会乘在所有字号上；填具体 pt 则覆盖模板值，两者叠加生效。</div></div>';
+
+    /* 字重 */
+    var WOR = [[0, '跟随模板'], [400, '常规 400'], [500, '中等 500'], [600, '半粗 600'], [700, '加粗 700'], [800, '特粗 800']];
+    function wSel(path, label, cur, dflt) {
+      var s = '<div class="field"><label>' + esc(label) + '（模板 ' + dflt + '）</label>' +
+              '<select data-path="' + path + '">';
+      for (var i = 0; i < WOR.length; i++) {
+        var v = WOR[i][0];
+        var txt = v === 0 ? WOR[i][1] + '（' + dflt + '）' : WOR[i][1];
+        s += '<option value="' + v + '"' + (num(cur, 0) === v ? ' selected' : '') + '>' + txt + '</option>';
+      }
+      return s + '</select></div>';
+    }
+    h += '<div class="group"><div class="ghead"><strong>字重</strong></div><div class="grid2">' +
+         wSel('meta.over.wName', '姓名', O.wName, T0.weight.name) +
+         wSel('meta.over.wSection', '小节标题', O.wSection, T0.weight.sectionTitle) +
+         '</div><div class="hint">⚠️ Word 的字重只有「粗 / 不粗」两档：选 <b>600 及以上</b>导出为粗体，400/500 导出为常规。预览里能看出 500 的差别，Word 里看不出。</div></div>';
+
+    /* 版面 */
+    h += '<div class="group"><div class="ghead"><strong>版面</strong></div>';
+    h += '<div class="hint" style="margin-bottom:6px">页边距（mm，留空=模板 ' +
+         T0.page.mTop + '/' + T0.page.mBottom + '/' + T0.page.mLeft + '/' + T0.page.mRight + '）</div>';
+    h += '<div class="grid2">' +
+         field('meta.over.pTop', '上', O.pTop || '') +
+         field('meta.over.pBottom', '下', O.pBottom || '') +
+         '</div><div class="grid2">' +
+         field('meta.over.pLeft', '左', O.pLeft || '') +
+         field('meta.over.pRight', '右', O.pRight || '') +
+         '</div>';
+    h += '<div class="hint" style="margin-bottom:6px">小节标题间距（pt，留空=模板 ' +
+         T0.section.spaceBefore + '/' + T0.section.spaceAfter + '）</div>';
+    h += '<div class="grid2">' +
+         field('meta.over.secBefore', '上间距', O.secBefore || '') +
+         field('meta.over.secAfter', '下间距', O.secAfter || '') +
+         '</div></div>';
 
     /* 各小节 */
     R.sections.forEach(function (sec, si) {
-      h += '<div class="group"><div class="ghead"><strong>' +
-           esc(sec.title || '未命名小节') + '</strong><div class="ops">' +
-           '<button type="button" data-act="sec-up" data-sec="' + si + '" title="上移">↑</button>' +
-           '<button type="button" data-act="sec-down" data-sec="' + si + '" title="下移">↓</button>' +
-           '<button type="button" data-act="del-sec" data-sec="' + si + '" class="danger">删除</button>' +
+      h += '<div class="group sec-group" data-sec-group="' + si + '">' +
+           '<div class="ghead" draggable="true" data-drag="' + si + '" title="按住拖动可调整顺序">' +
+           '<strong><span class="grip">⠿</span>' + esc(sec.title || '未命名小节') + '</strong><div class="ops">' +
+           '<button type="button" draggable="false" data-act="sec-up" data-sec="' + si + '" title="上移">↑</button>' +
+           '<button type="button" draggable="false" data-act="sec-down" data-sec="' + si + '" title="下移">↓</button>' +
+           '<button type="button" draggable="false" data-act="del-sec" data-sec="' + si + '" class="danger">删除</button>' +
            '</div></div>';
 
       h += field('sections.' + si + '.title', '小节标题', sec.title, '工作经历');
@@ -220,7 +271,7 @@
          '<button type="button" data-act="add-sec" data-type="text">+ 段落型</button>' +
          '<button type="button" data-act="add-sec" data-type="timeline">+ 经历型</button>' +
          '<button type="button" data-act="add-sec" data-type="list">+ 列表型</button>' +
-         '</div><div class="hint">段落型＝自我评价；经历型＝工作/项目；列表型＝技能。</div></div>';
+         '</div><div class="hint">段落型＝自我评价；经历型＝工作/项目；列表型＝技能。<br>小节标题栏可<b>按住拖动</b>调整顺序，也可以用 ↑↓ 按钮。</div></div>';
 
     $('#editor').innerHTML = h;
   }
@@ -240,7 +291,14 @@
     ['--t-sec-before', function (T) { return T.section.spaceBefore; }],
     ['--t-sec-after', function (T) { return T.section.spaceAfter; }],
     ['--t-bullet-indent', function (T) { return T.bullet.indent; }],
-    ['--t-line-height', function (T) { return T.font.lineSpacing || 1.55; }]
+    ['--t-line-height', function (T) { return T.font.lineSpacing || 1.55; }],
+    ['--t-w-name', function (T) { return T.weight.name; }],
+    ['--t-w-section', function (T) { return T.weight.sectionTitle; }],
+    /* 页边距：CSS 里是 padding 简写，必须带单位 */
+    ['--t-mt', function (T) { return T.page.mTop + 'mm'; }],
+    ['--t-mb', function (T) { return T.page.mBottom + 'mm'; }],
+    ['--t-ml', function (T) { return T.page.mLeft + 'mm'; }],
+    ['--t-mr', function (T) { return T.page.mRight + 'mm'; }]
   ];
 
   function applyTemplate(T) {
@@ -391,7 +449,7 @@
       var t = e.target, p = t.getAttribute && t.getAttribute('data-path');
       if (!p) return;
       setPath(state.resume, p, t.value);
-      if (p === 'meta.font.scale') {
+      if (p === 'meta.over.scale') {
         var live = t.closest('.field') && t.closest('.field').querySelector('[data-live-scale]');
         if (live) live.textContent = t.value + '%';
       }
@@ -401,6 +459,66 @@
       }
       renderPreview();
       save();
+    });
+
+    /* 拖拽排序小节 */
+    var dragFrom = -1;
+    var edEl = $('#editor');
+
+    edEl.addEventListener('dragstart', function (e) {
+      var hd = e.target.closest && e.target.closest('[data-drag]');
+      if (!hd) return;
+      dragFrom = parseInt(hd.getAttribute('data-drag'), 10);
+      var grp = hd.closest('.sec-group');
+      if (grp) grp.classList.add('dragging');
+      try {
+        e.dataTransfer.effectAllowed = 'move';
+        e.dataTransfer.setData('text/plain', String(dragFrom));
+      } catch (x) { /* 某些环境限制 */ }
+    });
+
+    edEl.addEventListener('dragover', function (e) {
+      var grp = e.target.closest && e.target.closest('.sec-group');
+      if (!grp || dragFrom < 0) return;
+      e.preventDefault();
+      try { e.dataTransfer.dropEffect = 'move'; } catch (x) { }
+      $$('.sec-group').forEach(function (g) { g.classList.remove('drag-over'); });
+      grp.classList.add('drag-over');
+    });
+
+    edEl.addEventListener('dragleave', function (e) {
+      var grp = e.target.closest && e.target.closest('.sec-group');
+      if (grp) grp.classList.remove('drag-over');
+    });
+
+    edEl.addEventListener('drop', function (e) {
+      var grp = e.target.closest && e.target.closest('.sec-group');
+      if (!grp || dragFrom < 0) return;
+      e.preventDefault();
+      var to = parseInt(grp.getAttribute('data-sec-group'), 10);
+      var from = dragFrom;
+      dragFrom = -1;
+      grp.classList.remove('drag-over');
+      if (isNaN(to) || to === from) return;
+      var arr = state.resume.sections;
+      var moved = arr.splice(from, 1)[0];
+      arr.splice(to, 0, moved);
+      renderEditor(); renderPreview(); save();
+    });
+
+    edEl.addEventListener('dragend', function () {
+      dragFrom = -1;
+      $$('.sec-group').forEach(function (g) { g.classList.remove('drag-over', 'dragging'); });
+    });
+
+    /* select 在部分环境只发 change 不发 input，补一条兜底 */
+    $('#editor').addEventListener('change', function (e) {
+      var t = e.target;
+      if (!t || t.tagName !== 'SELECT' || !t.getAttribute) return;
+      var p = t.getAttribute('data-path');
+      if (!p) return;
+      setPath(state.resume, p, t.value);
+      renderPreview(); save();
     });
 
     /* 编辑：按钮 */
@@ -447,9 +565,9 @@
         );
       } else if (act === 'del-photo') {
         R.basic.photo = '';
-      } else if (act === 'font-reset') {
+      } else if (act === 'over-reset') {
         if (!R.meta) R.meta = {};
-        R.meta.font = {};
+        R.meta.over = {};
       } else {
         structural = false;
       }
@@ -470,8 +588,8 @@
     /* 模板切换 */
     $('#tplSelect').addEventListener('change', function (e) {
       state.resume.meta.template = e.target.value;
-      /* 换模板回到该模板自带的字号，避免上一套的手动覆盖串味 */
-      state.resume.meta.font = {};
+      /* 换模板回到该模板自带的字号/字重磅/版面，避免上一套的覆盖串味 */
+      state.resume.meta.over = {};
       renderEditor(); renderPreview(); save();
     });
 
@@ -544,7 +662,12 @@
   function init() {
     if (!load()) state.resume = clone(DEMO);
     if (!state.resume.meta) state.resume.meta = { template: 'classic-blue' };
-    if (!state.resume.meta.font) state.resume.meta.font = {};
+    /* 旧版本把覆盖存在 meta.font，迁移到语义更准确的 meta.over */
+    if (state.resume.meta.font && !state.resume.meta.over) {
+      state.resume.meta.over = state.resume.meta.font;
+    }
+    delete state.resume.meta.font;
+    if (!state.resume.meta.over) state.resume.meta.over = {};
     renderTplSelect();
     renderEditor();
     renderPreview();

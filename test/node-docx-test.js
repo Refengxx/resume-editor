@@ -10,6 +10,7 @@ const T = {
   page: { mTop: 18, mBottom: 18, mLeft: 20, mRight: 20 },
   font: { family: 'Microsoft YaHei', base: 10 },
   color: { primary: '#1F3A5F', text: '#333333', muted: '#666666', line: '#1F3A5F' },
+  weight: { name: 600, sectionTitle: 400 },
   header: { nameSize: 22, titleSize: 11, contactSize: 9, photoWidth: 26 },
   section: { titleSize: 12, underline: true, spaceBefore: 10, spaceAfter: 4 },
   bullet: { marker: '•', indent: 5 },

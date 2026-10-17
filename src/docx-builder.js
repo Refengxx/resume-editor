@@ -29,6 +29,9 @@
     const fam = T.font.family;
     const base = T.font.base;
     const C = T.color;
+    /* Word 的字重只有「粗 / 不粗」两档：>=600 视为粗体，其余按常规导出 */
+    const wNameBold = ((T.weight && T.weight.name) || 700) >= 600;
+    const wSecBold = ((T.weight && T.weight.sectionTitle) || 700) >= 600;
 
     function run(text, o) {
       o = o || {};
@@ -50,7 +53,7 @@
     const leftParas = [];
     leftParas.push(new Paragraph({
       spacing: { after: 60 },
-      children: [run(b.name || '', { bold: true, size: T.header.nameSize, color: C.primary })],
+      children: [run(b.name || '', { bold: wNameBold, size: T.header.nameSize, color: C.primary })],
     }));
     if (b.title) {
       leftParas.push(new Paragraph({
@@ -110,7 +113,7 @@
         border: T.section.underline ? {
           bottom: { style: BorderStyle.SINGLE, size: 6, color: hex(C.line), space: 2 },
         } : undefined,
-        children: [run(sec.title, { bold: true, size: T.section.titleSize, color: C.primary })],
+        children: [run(sec.title, { bold: wSecBold, size: T.section.titleSize, color: C.primary })],
       }));
 
       if (sec.type === 'text') {

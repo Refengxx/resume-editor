@@ -27,6 +27,9 @@
 | **单文件离线** | 双击 `dist/index.html` 即用。无网络、无安装、无 CDN 依赖 |
 | **实时预览** | 左侧编辑，右侧 A4 实时渲染，所见即所得 |
 | **字号可调** | 全局缩放滑块（80%–130%）+ 正文/姓名/头衔/联系方式/小节标题 分项 pt 微调，预览与导出同时生效 |
+| **字重可调** | 姓名 / 小节标题 可选 400–800。⚠️ Word 的字重只有「粗 / 不粗」两档：≥600 导出为粗体 |
+| **版面可调** | 页边距（上下左右 mm）+ 小节标题上下间距（pt） |
+| **模块自由排序** | 按住小节标题栏**拖动**调整顺序，也可用 ↑↓ 按钮 |
 | **模板系统** | **10 套内置模板**；支持**导入/导出模板 JSON**，别人做的模板可直接拿来用 |
 | **导出可编辑 Word** | `.docx`，文字可改、图片可换、排版不乱 |
 | **打印成 PDF** | 浏览器打印面板选「另存为 PDF」，投递用 |
@@ -52,6 +55,7 @@
   "page":    { "mTop": 18, "mBottom": 18, "mLeft": 20, "mRight": 20 },
   "font":    { "family": "Microsoft YaHei", "base": 10, "lineSpacing": 1.55 },
   "color":   { "primary": "#1F3A5F", "text": "#333333", "muted": "#666666", "line": "#1F3A5F" },
+  "weight":  { "name": 700, "sectionTitle": 700 },
   "header":  { "nameSize": 22, "titleSize": 11, "contactSize": 9, "photoWidth": 26 },
   "section": { "titleSize": 12, "underline": true, "spaceBefore": 10, "spaceAfter": 4 },
   "bullet":  { "marker": "•", "indent": 5 }
@@ -65,6 +69,7 @@
 | `font.base` | 正文字号 | pt |
 | `font.lineSpacing` | 行距倍数（1.55 ≈ 常态，1.38 更紧凑） | 倍数 |
 | `color.*` | 主色 / 正文 / 次要 / 分隔线 | hex |
+| `weight.name` / `weight.sectionTitle` | 姓名 / 小节标题字重（400–800） | 数值 |
 | `header.nameSize` 等 | 姓名 / 头衔 / 联系方式字号 | pt |
 | `header.photoWidth` | 照片宽度 | mm |
 | `section.underline` | 小节标题是否加下划线 | 布尔 |

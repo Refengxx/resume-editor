@@ -59,6 +59,7 @@ const BUILTIN_TEMPLATES = [
     page: { mTop: 17, mBottom: 17, mLeft: 24, mRight: 24 },
     font: { family: 'Microsoft YaHei', base: 10, lineSpacing: 1.62 },
     color: { primary: '#000000', text: '#1C1C1C', muted: '#7A7A7A', line: '#E2E2E2' },
+    weight: { name: 600, sectionTitle: 500 },
     header: { nameSize: 19, titleSize: 10, contactSize: 8.5, photoWidth: 0 },
     section: { titleSize: 10.5, underline: false, spaceBefore: 12, spaceAfter: 5 },
     bullet: { marker: '·', indent: 5 }
@@ -112,6 +113,7 @@ const TEMPLATE_FALLBACK = {
   page: { mTop: 18, mBottom: 18, mLeft: 20, mRight: 20 },
   font: { family: 'Microsoft YaHei', base: 10, lineSpacing: 1.55 },
   color: { primary: '#1F3A5F', text: '#333333', muted: '#666666', line: '#1F3A5F' },
+  weight: { name: 700, sectionTitle: 700 },
   header: { nameSize: 22, titleSize: 11, contactSize: 9, photoWidth: 26 },
   section: { titleSize: 12, underline: true, spaceBefore: 10, spaceAfter: 4 },
   bullet: { marker: '•', indent: 5 }

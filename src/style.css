@@ -103,6 +103,18 @@ select { padding-right: 26px; }
   background: #fff;
 }
 
+.field select {
+  width: 100%;
+  font-family: inherit;
+  font-size: 13px;
+  padding: 7px 9px;
+  border: 1px solid var(--ui-border);
+  border-radius: 5px;
+  background: #fbfcfd;
+  color: var(--ui-text);
+}
+.field select:focus { outline: none; border-color: var(--ui-accent); background: #fff; }
+
 .grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
 
 .group {
@@ -121,6 +133,21 @@ select { padding-right: 26px; }
 .group > .ghead strong { font-size: 13px; }
 .group > .ghead .ops { display: flex; gap: 6px; }
 .group > .ghead button { padding: 3px 8px; font-size: 12px; }
+
+/* 拖拽排序 */
+.group > .ghead .grip {
+  color: #b9c4d0;
+  margin-right: 4px;
+  cursor: grab;
+  user-select: none;
+}
+.sec-group > .ghead { cursor: grab; }
+.sec-group.dragging { opacity: .4; }
+.sec-group.drag-over {
+  outline: 2px dashed var(--ui-accent);
+  outline-offset: 2px;
+  border-radius: 8px;
+}
 
 .item-card {
   border: 1px dashed var(--ui-border);
@@ -159,7 +186,7 @@ select { padding-right: 26px; }
 .p-header .ph-left { flex: 1; min-width: 0; }
 .p-name {
   font-size: calc(var(--t-name) * 1pt);
-  font-weight: 700;
+  font-weight: var(--t-w-name, 700);
   color: var(--t-primary);
   line-height: 1.2;
   letter-spacing: 1px;
@@ -189,7 +216,7 @@ select { padding-right: 26px; }
 .p-section { margin-top: calc(var(--t-sec-before) * 1pt); }
 .p-section > .st {
   font-size: calc(var(--t-sec-title) * 1pt);
-  font-weight: 700;
+  font-weight: var(--t-w-section, 700);
   color: var(--t-primary);
   padding-bottom: 3px;
   letter-spacing: .5px;
